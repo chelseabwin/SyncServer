@@ -1,6 +1,7 @@
 import java.io.*;  
 import java.net.ServerSocket;  
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.json.JSONArray;
@@ -73,7 +74,6 @@ public class Server {
                 // 读取用户输入信息
                 String info = null;
                 while(!((info = br.readLine()) == null)) {
-                    //System.out.println("json串："+info);
                     analysisJson(info); // json串解析及数据库操作
                 }
                 // 返回客户端一个响应
@@ -122,7 +122,6 @@ public class Server {
 		            		
 		            		@SuppressWarnings("unchecked")
 							Iterator<String> itField = jsonField.keys();
-			            	System.out.println(jsonField.toString());
 			            	
 			            	StringBuffer fieldkey = new StringBuffer(); // 用于添加，存储字段名称
 	            	    	StringBuffer fieldValue = new StringBuffer(); // 用于添加，存储字段值
@@ -167,12 +166,17 @@ public class Server {
 	 * @param table 待插入表名
 	 * @param key 插入参数名
 	 * @param values 插入参数值
-	 * @return 插入成功返回新数据id，失败返回0
 	 */
-    public int insertData(String table, String key, String values) {
+    public void insertData(String table, String key, String values) {
 		String sql = "insert into " + table + "(" + key + ") values(" + values + ")";
-		System.err.println(sql);
-		return 0;
+		
+		DBHelper db = new DBHelper(sql); //创建DBHelper对象
+		try {
+			db.pst.executeUpdate(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
     
     /** 修改数据
@@ -180,9 +184,8 @@ public class Server {
 	 * @param table 待修改表名
 	 * @param setValue 修改参数
 	 * @param where 修改位置
-	 * @return 修改成功返回1，失败返回0
 	 */
-    public int updateData(String table, String setValue, String where) {
+    public void updateData(String table, String setValue, String where) {
 		String sql = null;
 		if (where == null) {
 			sql = "update " + table + " set " + setValue;
@@ -190,15 +193,18 @@ public class Server {
 		else {
 			sql = "update " + table + " set " + setValue + " where " + where;
 		}
-		System.err.println(sql);
-		return 0;
+		
+		DBHelper db = new DBHelper(sql); //创建DBHelper对象
+		try {
+			db.pst.executeUpdate(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {
-		//new Server(30000).start();
-		String str1 = "[{\"base1\":[{\"across_type\":\"[1]沟壑\",\"custody_unit\":\"\",\"rode_grade\":\"[0]高速公路\",\"location\":\"\",\"flag\":\"0\"}]},"
-				+ "{\"base2\":[]},{\"base3\":[]},{\"support_detail\":[]}]";
-		new Server(0).analysisJson(str1);
+		new Server(30000).start();
 	}
 }
 
